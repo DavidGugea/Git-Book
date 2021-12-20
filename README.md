@@ -85,6 +85,7 @@ Git commands:
 | Command | Description |
 | ----------- | ----------- |
 | ```git add``` | Adds a file to the staging area |
+| ```git commit``` | Commits a file from the staging area to the repository |
 | ```git cat-file -p <hash>```| Returns data about the given object ( blob, tree or commit ) |
 | ```git cat-file -t <hash>```| Returns the type of object ( blob, tree or commit ) |
 | ```git mv <oldfilename> <newfilename>```| Changes the name of the file |
