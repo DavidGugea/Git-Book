@@ -92,3 +92,64 @@ Git commands:
 | ```git mv <file> <into-another-directory>```| Changes the directory of a file |
 | ```git rm```| Removes a file |
 
+## Commit-Undo
+
+### Reseting from staging area -> ```git reset```
+
+If you have added a file to your staging area using ```git add/stage``` and you don't want that file to be in the staging area anymore so it won't be taken into consideration by the next commit you can use ```git reset <file>```. If you want to take all the files from the staging area use ```git reset``` ( with no parameters ).
+
+### Restoring changes to last commit -> ```git restore```
+
+If you have made changes to a file since the last commit and you don't want these changes anymore, you want to go back to the last commit, you can use ```git restore <file>``` and if you have made changes to multiple files and you want to undo these changes to all files that you've modified and go back to the last commit you can use ```git restore .```.
+
+### Looking at files from older version -> ```git show```
+
+If you want to see what a file looked like at a specific commit you can use ```git show <commit-hash/HEAD~n>:<file>```.
+If you write ```git show HEAD:foo.txt```, it will show you how the file ```foo.txt``` looked like the last commit.
+If you write ```git show HEAD~1:foo.txt```, it will show you how the file ```foo.txt``` looked like 2 commits ago.
+
+Remember that you can see the **HEAD** number, the commit hash and commit message using ```git reflog```.
+
+You can also look back at files from a specific commit. Example:
+
+```git show ab3f:foo.txt```
+
+This will show you how ```foo.txt``` looked like at that specific commit hash.
+
+### Looking at changes from different version / Comparing different versions -> ```git diff```
+
+You can use ```git diff``` to see the exact changes that have been made to a file.
+
+```git diff <commmit-hash/HEAD~n> <file>```
+
+### Restoring files from older versions -> ```git restore```
+
+If you want to resoter files from older versions you can use ```git restore -s <commit-hash/HEAD~n> <file>```
+The parameter ```-s``` stands for ```--source``` and it requires a tree of changes.
+
+### Revoking commits -> ```git revert```
+
+You can go back to older commits using ```git revert <commit-hash/HEAD~n>```. 
+You can revoke more commits at once, but you will have to write a commit message for each of them which is a waste of time, so you can use the ```git revert -n``` which stands for ```git revert --no-commit```:
+
+```git revert -n HEAD~2^..HEAD```
+
+or 
+
+```git revert -n abcd^..qwer```
+
+It's important for the structure to look like this:
+
+```git revert -n <commit-hash/HEAD~n>^..<commit-hash/HEAD~n>```
+
+### Revoking commits -> ```git reset```
+
+You can also revoke commits using ```git reset --hard/--soft <commit-hash/HEAD~n>```, but the difference is that the ```HEAD``` will point out to a different commit, you won't have to create a new commit. You will also see another history of changes when writing ```git log``` ( you can always write ```git reflog``` to see the changes that you've made and go back to commits that can't be seen by ```git log```).
+
+The difference between ```--hard``` and ```--soft``` is that the changes that you've made won't be saved with ```--hard```, they will be overwritten by the commit that you're revoking.
+
+### Temporarily changing to an older commit -> ```git checkout```
+
+You can use ```git checkout``` in order to temporarily go to an older commit, you HEAD will be a ```detached HEAD```:
+
+```git checkout <commit-hash/HEAD~n>```.
