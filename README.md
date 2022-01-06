@@ -153,3 +153,14 @@ The difference between ```--hard``` and ```--soft``` is that the changes that yo
 You can use ```git checkout``` in order to temporarily go to an older commit, you HEAD will be a ```detached HEAD```:
 
 ```git checkout <commit-hash/HEAD~n>```.
+
+## Branches
+
+Branches are widely used in teams in order to split the work in different tasks. You might one to work on a new feature for an app, but not push the code on the master branch directly because your work might not be finished yet or not tested. 
+You can solve that problem by using branches.
+
+In order to create a branch, you can use ```git branch <branch-name>``` and if you want to see a list of all branches ```git branch --list```.
+
+You can also use ```git checkout``` in order to leave the current branch that you are on and go on another branch for a short time: ```git checkout <branch-name>```.
+
+A branch is nothing else than a ```commit object```. The branches that you make will appear in ```.git/refs/heads```. This is why branching happens so fast and easy in git.
