@@ -164,3 +164,90 @@ In order to create a branch, you can use ```git branch <branch-name>``` and if y
 You can also use ```git checkout``` in order to leave the current branch that you are on and go on another branch for a short time: ```git checkout <branch-name>```.
 
 A branch is nothing else than a ```commit object```. The branches that you make will appear in ```.git/refs/heads```. This is why branching happens so fast and easy in git.
+
+## Merge
+
+If you've been working on a new feature on a special branch and you're done with that feature, you will want to integrate it into the main project, into the ```master``` branch. In order to do that you have to go back to the master branch and ```merge``` it using ```git merge branch_name```.
+
+If you want to delete the branch directly after merging you can use:
+
+```git merge -d branch_name```
+
+If you want to see a list of your branches use:
+
+```git branch --list```
+
+You can also write ```--merged```/```-no-merged``` if you want to see if the branches were merged into the master branch or if people are still working on them.
+You can also merge the ```master``` branch into your feature branch. You don't always have to merge the feature branch into your master branch, you can also do the opposite. If you've been working for a long time on your feature, you might want to stay up to date with what's happening on the real project ( on the ```master``` branch ); in order to do that you have to merge the ```master``` branch into your feature branch.
+
+There are 2 types of merges:
+
+* Fast-Forward Merge
+* Normal Merge
+
+### Fast-Forward Merge
+
+Imagine you are working on the branch ```feature``` and you have made 2 commits on it: C and D. On the ```master``` branch, nothing has changed ( there haven't been any new commits ) since you've changed to the ```feature``` branch, so you only have commits A and B.
+
+This is how your branches look like:
+
+**master: A B**
+**feature: A B C D**
+
+If you want to merge the feature branch into the master branch, that is called a **Fast-Forward merge**.
+A **Fast-Forward merge** is not a real merge since the only thing that is really happening is changing the *HEAD* pointer to the last commit of the merged branch.
+
+### Normal Merge
+
+A normal merge is when your master branch has at least 1 commit that the branch that you are trying to merge doesn't have:
+
+**master: A B E**
+**feature: A B C D**
+
+In this case, you will have to write a special *merge commit message*.
+
+### Octopus Merge
+
+The octopus merge is when you merge multiple branches in one merge:
+
+```git merge branch1 branch2 branch3``` 
+
+**This is a very bad practice** since it's very hard to debug merge conflicts in this way, even if there are only 2 branches that are being merged together. The only advantage of this type of merge is that you only have to write one single commit message; however **it is a better practice to merge every single branch on its own**.
+
+### Merging Strategies
+
+There are multiple merging strategies that you can pick using
+
+```git merge -s <strategy>```
+
+* resolve
+* recursive ( default )
+* octopus
+* subtree
+
+From the git manual:
+
+> resolve - This can only resolve two heads (i.e. the current branch and another branch you pulled from) using 3-way merge algorithm. It tries to carefully detect criss-cross merge ambiguities and is considered generally safe and fast.
+
+> recursive - This can only resolve two heads using 3-way merge algorithm. When there are more than one common ancestors that can be used for 3-way merge, it creates a merged tree of the common ancestors and uses that as the reference tree for the 3-way merge. This has been reported to result in fewer merge conflicts without causing mis-merges by tests done on actual merge commits taken from Linux 2.6 kernel development history. Additionally this can detect and handle merges involving renames. This is the default merge strategy when pulling or merging one branch.
+
+> octopus - This resolves more than two-head case, but refuses to do complex merge that needs manual resolution. It is primarily meant to be used for bundling topic branch heads together. This is the default merge strategy when pulling or merging more than one branches.
+
+> ours - This resolves any number of heads, but the result of the merge is always the current branch head. It is meant to be used to supersede old development history of side branches.
+
+> subtree - This is a modified recursive strategy. When merging trees A and B, if B corresponds to a subtree of A, B is first adjusted to match the tree structure of A, instead of reading the trees at the same level. This adjustment is also done to the common ancestor tree.
+
+A short summary of them:
+
+*Resolve* and *recursive* are almost the same but recursive results in fewer merge conflicts. We've already talked about the octopus merging strategy. If you are using ```git merge branch1 branch2 branch3``` you don't have to specify the *octopus* strategy since it's used automatically. The *ours* strategy is used when you want to pull in another head but throw away the changes that the head introduced. The *subtree* is used when you want to merge a project into a subdirectory of your current git project.
+
+### Cherry Picking
+
+You're working on ```branch1``` and already have a few commits ahead of ```master```. You go back to ```master``` in order to fix some bugs and make a few other commits on ```master``` as well and then go back to ```branch1```. You realize later that the bug that you've fixed on the ```master``` branch needs to be fixed on the ```branch1``` as well, so you could tehnically merge the ```master``` branch into your feature branch; however you realize that other commits have been made to the ```master``` branch that you don't want into your feature branch, meaning that you can't merge that branch. **In order to fix this problem you must cherry pick the commit where you've fixed the bug.
+
+```git cherry-pick <commit-hash>```
+
+Cherry picking means 'merging' one single commit. You are not merging the entire branch, you are just taking the changes that you've made on a specific commit.
+The following image illustrates cherry picking:
+
+![Cherry Pick Example](ScreenshotsForNotes/Chapter3/CherryPickExample.PNG)
