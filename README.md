@@ -251,3 +251,23 @@ Cherry picking means 'merging' one single commit. You are not merging the entire
 The following image illustrates cherry picking:
 
 ![Cherry Pick Example](ScreenshotsForNotes/Chapter3/CherryPickExample.PNG)
+
+## Stash
+
+Stashing is used when you want to save the changes that you've made, just like a commit, but not commit them.
+If you are working for example on a feature and you have to switch to another branch in order to fix a bug, you might not want to commit the changes that you've made since they are probably not done yet and the feature isn't working properly yet.
+In order to save the changes without making a commit you can use
+
+```git stash```
+
+After solving the bug on the other branch that you had to go to, if you want your changes back use
+
+```git stash pop```
+
+The stash works like a ```stack``` ( that's why you use *git stash pop* ). You can stash multiple changes. The first changes that you've stashed will be the last ones to get popped out of the stash
+
+Using ```git stash list``` you get to see the stack of stashes that you have.
+You can use ```git stash -p stash@{<n>}``` in order to get information about a certain stash.
+Use ```git stash drop``` in order to delete one stash and ```git stash clear``` in order to delete all the stashes that you've made.
+
+You can find references to all the stashes in *.git/refs/stash*.
