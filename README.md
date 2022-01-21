@@ -271,3 +271,114 @@ You can use ```git stash -p stash@{<n>}``` in order to get information about a c
 Use ```git stash drop``` in order to delete one stash and ```git stash clear``` in order to delete all the stashes that you've made.
 
 You can find references to all the stashes in *.git/refs/stash*.
+
+## Remote Repository
+
+### What are remote repositories
+
+Git started as a decentralized organisation. But very soon, GitHub was created since not every developer could build a Git-Server for their team. 
+A Remote Repository is just like a normal local repository with the only difference that it is stored on a git server ( like GitHub, GitLab, BitBucket, etc. ).
+
+You can add a remote repository to your local repository ( so you can push to it later ) by using ```git remote add <name> <link>```.
+
+Regardless of where your remote repository is stored, ```git push -u``` ( ```--set-upstream``` ) will just point to a link.
+
+### Push And Pull
+
+Let's take a look at the following example:
+User A and User B are both working on the same project, on the same branch ( ```master``` ). They are both currently at the same commit.
+User A makes 2 commits, pushes the changes onto the remote repository and leaves.
+User B makes 3 commits but when he will try to push his changes, he will be rejected.
+
+![Rejected Push](ScreenshotsForNotes/Chapter3/RejectedPush.PNG)
+
+Before pushing into a remote repository, you must always make sure that you are on the latest commit of that remote repository, otherwise you will have to pull.
+
+### Remote Branches
+
+There is almost never the case that you will work directly on the master branch will all other developers on the team. Usually you create a branch for each feature and after finishing the feature and testing it, you will merge it inside the master branch.
+
+In order to push a branch to a remote branch, you specify the name of the remote repository and then the name of the branch:
+
+```git push --set-upstream <name> <branch_name>```
+
+Concrete example:
+
+```git push --set-upstream origin feature```
+
+After doing this you will have that branch with its head and the name of the remote repository added to ```.git/config```:
+
+```
+[branch "feature"]
+        remote = origin
+        merge = refs/heads/feature
+```
+
+### Pull for all branches, push for the active branch
+
+An important thing to know about ```git pull``` is that it downloads all the new commits on all branches, but it only performs a merge on the active branch.
+If you are going to switch to another branch, you should use ```git pull``` one more time since the commits for that branch might have been downloaded but never merged.
+```git pull``` is just a combination of ```git fetch``` and ```git merge```, so just because the commits have been downloaded using ```git fetch``` that doesn't always mean that they have been merged as well.
+
+```git push``` however only takes in  consideration the active branch. If you have made commits on 3 different branches: ```master```, ```feature1``` and ```feature2``` but you used ```git push``` only on the ```master``` branch, only the commits on the ```master``` branch will be pushed onto the remote repository. If you want don't want to repeat ```git push``` on all the branches that you have new commits on, you can use ```git push --all```.
+
+### Interna
+
+Every branch that you push onto a remote repository and every branch that is downloaded when you pull a remote repository is called a **Tracking-Branch** ( more exactly a **Remote Tracking-Branch** ).
+That means that git tracks this branches locally as well as remotely.
+You can see all of your remote tracking branches in ```.git/refs```
+
+```
+> tree .git/refs
+
+.git/refs
+├── heads
+│   ├── master
+│   └── feature1
+│   └── feature2
+├── remotes
+│   └── origin
+│       ├── master
+│       └── feature1
+│       └── feature2
+└── tags
+```
+
+You can use ```git branch --verbose``` to see all the local branches and their assigned remote branches.
+
+Keep in mind that ```git status``` only shows you if you are up to date with the local files and it doesn't research the remote repository. If you want to make sure that you are not behind with your branch, use ```git fetch``` or ```git remote update``` ( both do the same thing ) and then use ```git status```.
+
+### Multiple remote repositories
+
+It is possible to use ```git remote add``` to add multiple repositories. You might want to do that if you want to use GitHub and GitLab for example simultaneously.
+
+Example:
+
+```
+> git remote add gitlab git@gitlab.com:<account>/<repo>.git
+> git push gitlab --all
+```
+
+If you add multiple repositories, they will all appear in ```.git/config``` with their url and fetch config ( including the local branches ).
+
+```
+# in .git/config
+...
+
+[remote "origin"]
+        url = git@github.com:<account>/<repo>.git
+        fetch = +refs/heads/*:refs/remotes/origin/*
+[remote "gitlab"]
+        url = git@gitlab.com:<account>/<repo>.git
+        fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "master"]
+        remote = origin
+        merge = refs/heads/feature
+[branch "feature1"]
+        remote = origin
+        merge = refs/heads/feature1
+[branch "feature2"]
+        remote = origin
+        merge = refs/heads/feature2
+```
+
