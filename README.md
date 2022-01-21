@@ -382,3 +382,64 @@ If you add multiple repositories, they will all appear in ```.git/config``` with
         merge = refs/heads/feature2
 ```
 
+## Solving merge conflicts
+
+### Example of a merge commit and how to solve it
+
+**In order to avoid merge conflicts it's better to merge more often since it's easier to solve a merge conflict if the load is smaller.**
+
+Example of a merge conflict and how to solve it:
+
+We have a file *foo.txt* on branch *feature1* that has *foo 1* written on the first line.
+We have a file *foo.txt* on branch *feature2* that has *foo 2* written on the first line.
+
+If we merge feature2 into feature1: ```git merge feature2``` ( while being on the  ```feature1``` branch) we will get a merge conflict since we have 2 different things on the same line.
+
+This is how *foo.txt* will look like:
+
+```
+<<<<<<< HEAD
+foo 1
+=======
+foo 2
+>>>>>>> feature2
+```
+
+You will now have to choose one value ( it is also recommended to write a comment above the merge conflict specifying which value you choose and specifying the date of the merge conflict ).
+You will then have to make a commit for the merge.
+
+You can also use merge tools ( ```git mergetool --tool <tool>``` ) such as meld or vimmerge.
+
+### Conflicts with binary files
+
+If you get into a merge conflict with binary files ( a conflict with a PNG file for example ) you won't be able to manually change the code.
+What you will have to do is specify directly which verision you want to keep:
+
+Use ```git checkout --ours -- <file_name>``` if you want to keep your version of the binary file.
+Use ```git checkout --theirs -- <file_name>``` if you want to keep the merged version of the file.
+
+Keep in mind that if you stumble across a merge conflict with binary files the ```--ours``` and ```--theirs``` parameters while **rebasing** will be reversed since when you rebase, the merged files are treated as the base, they have the priority.
+
+### Merge abort and undo
+
+If you want to get out of the merge conflict use ```git merge --abort``` and if it's too late for that you can always use ```git reset --hard <hash>``` to go to the last commit.
+
+### Whitespace Problems
+
+If your code happens to be formatted slightly differently than the code merged by the branch, it can also come to a merge conflict related to whitespaces. In order to make a merge that disregards whitespaces use ```git merge -X ignore-all-space```.
+
+### Internal Merge-Conflicts
+
+There are cases where merge conflicts happen but git doesn't alert you of them because he's not aware. These types of merge conflicts won't alert you about any problems but your code will show bugs in the feature.
+The best way to get ahold of internal merge-conflicts and make sure that if one such conflict happens you will be able to detect it as fast as possible, you must unit-test your code thoroughly.
+
+### Merge Files
+
+In case of a merge conflict, the following new files will be created:
+
+* ```MERGE_HEAD``` contains the hash code of the branch that has to be merged. In the case of an octopus merge it contains all the hashcodes of all the branches envolved.
+* ```MERGE_MODE``` is normally empty. If you, however, use ```git merge --no-ff``` ( which means that a merge commit will be needed regardless if it could have been a fast-forward merge or not ), the file will get some information.
+* ```MERGE_MSG``` contains the text of the last commit and is not relevant for the merging process
+* ```ORIG_HEAD``` contains the hash code of the current active branch.
+
+After the merge is closed all the files will be deleted ( except for ```ORIG_HEAD``` ).
