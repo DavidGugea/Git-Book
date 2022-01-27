@@ -443,3 +443,203 @@ In case of a merge conflict, the following new files will be created:
 * ```ORIG_HEAD``` contains the hash code of the current active branch.
 
 After the merge is closed all the files will be deleted ( except for ```ORIG_HEAD``` ).
+
+## Rebasing
+
+Rebasing is just like merging but instead of building a merge commit, the history of the branch that you are rebasing on, is changed in such a way that it looks like the rebased merge was part of that branch.
+
+**Rebasing on fast-forward merges is just like merging.**
+
+Let's look at the following example:
+
+![Base Example](ScreenshotsForNotes/Chapter3/BaseExample.PNG)
+
+In this example we have our branch ```master``` with 3 commits and the feature branch with 2 commits:
+
+```master  -> m1 m2 m3```
+```feature -> m1 m2 f1 f2```
+
+So the master branch is with at least one commit ahead of the feature branch.
+If we go in the master branch and merge the feature branch right now, we will have to do a new merge commit.
+
+![Base Example 2](ScreenshotsForNotes/Chapter3/BaseExample2.PNG)
+
+Now, if we merge the feature branch:
+
+![Merge commit](ScreenshotsForNotes/Chapter3/MergeCommit.PNG)
+
+**The parent of ```foo 3``` hasn't changed after merging, it's still ```foo 2```**.
+**In order to bind those branches, the new merge commit has 2 parents, ```foo 3``` and ```bar 2```, which are the Heads of the branches that we've merged together**.
+
+Let's see how this looks like after rebasing the feature branch in the master branch:
+
+![Rebasing Example](ScreenshotsForNotes/Chapter3/RebasingExample.PNG)
+
+**In this case, the commit-hash of ```foo 3``` has changed.  That's because the parent of ```foo 3``` is not ```foo 2``` anymore. The parent of ```foo 3``` is now pointing towards ```bar 2```. This is what rebasing does**.
+
+**After we've rebased, we have changed the history of our branch by changing the parent of the Head of the branch that we've rebased on**.
+
+### The unwritten rule of rebasing
+
+**AN UNWRITTEN RULE IS THAT YOU SHOULD *NEVER REBASE ON A PUBLIC BRANCH THAT WILL BE CONNECTED TO A REMOTE REPOSITORY*.** That is because you want to clearly see the changes that have been made to that specific branch.
+
+### Pulling with rebase
+
+You can also pull with rebase ( ```git pull --rebase``` ). This is also the most known reason for rebasing. This is used so often that you can even set it as default:
+
+```git config [--global] pull.rebase true```
+
+### Rebase conflicts
+
+If you are in a rebase conflict with binary files remember that ```--ours``` and ```--theirs``` have 2 different meanings when using ```git checkout --ours/--theirs```. That means that ```--theirs``` is your version and ```--ours``` is the version of the branch that you want to rebase onto your branch.
+And remember, the most important rule is that you should never use ```git rebase``` on branches that you will use ```git push``` on.
+
+### Git rebase undo
+
+With ```git rebase --into <newbase> <other>``` you can transfers the branch ```other``` to another base that is not your branch. Stackoverflow example ( https://stackoverflow.com/questions/21148512 ):
+
+![Rebase Problem](ScreenshotsForNotes/Chapter3/RebaseProblem.PNG)
+![Rebase Problem Solution](ScreenshotsForNotes/Chapter3/RebaseProblemSolution.PNG)
+
+### Squashing
+
+Squashing is made by using ```git merge --squash <other>```. By squashing, you get all the data ( new files, deleted files, modified files ) that you would get through a merge with the difference that you don't have to do a merge commit that contains 2 parents.
+When you squash, you get all the data that you would get from a merge and that will be in your working directory. After you commit the new data, that commit will have nothing to do with the commits from the squashed branch and it will be treated as a normal, new commit, on your branch.
+
+If I squash the ```feature``` branch in this example it would look something like this:
+
+![Base Example 2](ScreenshotsForNotes/Chapter3/BaseExample2.PNG)
+
+```git merge --squash feature```
+
+![Squash message](ScreenshotsForNotes/Chapter3/SquashMessage.PNG)
+
+If I now check my working directory, I will get all the data that I would normally get from a normal merge, but without the commit:
+
+![Squash before commit](ScreenshotsForNotes/Chapter3/SquashBeforeCommit.PNG)
+![Squash data](ScreenshotsForNotes/Chapter3/SquashData.PNG)
+
+If I now make a new commit, that commit as I've said before, will be treated as a normal commit, not as a merge commit that has 2 parents:
+
+![Squash commit](ScreenshotsForNotes/Chapter3/SquashCommit.PNG)
+
+## Tags
+
+### What is a tag and how to create one 
+
+Up to this point references to commits where made by using hashcodes. Tags help you create "checkpoints" in your code at certain commits. A commit can have multiple tags. Tags are shown in the ```Releases``` section of a repository on **Github** ( this is platform-specific thing, not all tags have something to do with releases. The word 'releases' is not a thing in Git, only tags. )
+
+You can create a tag at the commit you're at by using ```git tag <tagname>```.
+
+### Types of tags
+
+There are 2 types of tags:
+
+* **Lightweight tags** - These tags are normal tags created with ```git tag  <tagname>```. These tags are saved in ```.git/refs/tags``` where the name of the file is the name of the tag and file contains the hashcode of the commit where the tag has been created.
+* **Annotated tags** - These tags are created with ```git tag -a <tagname>``` and it also contains, besides the default information that comes into a tag, other information like for example when the tag was created. You can even give it a special message by adding the ```-m``` flag, just like you would do at a commit. It is also saved in ```.git/refs/tags``` but the tag file won't point at a commit, it will point at the tag object that would contain special information about the annotated tag and also a reference to the commit.
+
+### Synchronizing tags
+
+If you want to synchronize tags, it's important to know that by using ```git push```, your tags won't be pushed onto the remote repository. You can use the following options for push in order to properly synchronize tags:
+
+* ```git push origin <tagname>``` will only push the given tag. This works for both lightweight and annotated tags
+* ```git push --tags``` will push all the tags to the remote repository. This works for both lightweight and annotated tags. **This type of push will only push the tags, not the commits**. If you want to push both the tags and the commits at the same time you should push first, normally and then push all the tags.
+* ```git push --follow-tags``` will push all the tags and the commits to the remote repository. **This option will only push annotated tags, lightweight tags will be ignored**.
+
+You can use ```git config --global push.followTags true``` in order to make it as default to push annotated tags with each normal push.
+
+### Settings tags to specific commits
+
+If you want to set a tag for a specific commit use ```git tag <tag> <commit-hash>```.
+
+### Deleting tags
+
+If you want to delete a tag use ```git tag --delete <tagname>```.
+
+### Correcting tags
+
+If you made a mistake in yoru tag and you want to replace it and it hasn't been pushed yet then you can use ```git tag <new> <old>``` for lightweight tags and ```git tag <new> <old>^{}``` for annotated tags. It's a lot harder to correct tags after they've been pushed to a remote repository. When that happens, the other member must ```git pull --prune --tags``` since the tags won't be overriden when pulling.
+
+### Signing tags
+
+You can also sign tags with gpg keys.
+
+## Commit references.
+
+### What are revisions, what are referencs.
+
+Revisions in git are files that are part of the git database and that can be packed inside a commit; so a commit can contain multiple revisions. A Revision can desscribe the status or version of a object in the git repository.
+
+The easiest form of reference to a certain commit is the hashcode of that commit that you can get from ```git log``` ( ```git log --oneline``` is you are strictly only interested in the hashcode ).
+
+### Going back to older commits
+
+There are however other ways of going back to older commits:
+
+* ```HEAD@{4}``` describes the commit that was made 4 **actions** ago, before the current commit. The ```{date}``` notation describes the reference-log ( ```git reflog``` ). That means that actions such as **pull**, **push**, **merge**, **rebase**, etc. are also included in the reflog.
+* ```develop@{2 weeks ago}``` represents the last commit on the branch ```develop``` that was made at least 2 weeks ago. **This notation is using the reflog as well.**
+* ```HEAD~2``` references the commit that sits 2 commits behind the vcurrent commit. **This notations is using the log, so you will only get to commit-objects.**
+* ```@^2``` points to the second parent object of the current commit ( a merge commit has for example more than one parent ). ***```@``` is the abbreviated form for ```HEAD```**.
+
+### Reference names
+
+Reference names in git and names that are used in ```.git/refs``names `
+u can use ```git show @``` or ```git show HEAD``` for example but you can also directly just use whatever is in ```.git/refs```: ```git show master``` or ```git show refs/heads/feature_xy``` or ```git show refs/remotes/origin/develop```.
+
+### ```refname@{date}``` and ```refname@{n}```
+
+With ```refname@{date}``` you can go back to older reference names based on a certain date. It will return the first object that matches that specific date. **```HEAD@{2 weeks ago}``` is for example the first commit that is older than 2 weeks.** If there is no such object in the ```reflog``` then you will get the oldest commit that there is.
+
+With ```refname@{n}``` you will get the state of an object that was made ```n``` actions before ( remember that it uses the ```reflog```, so commands like ```git checkout``` or ```git reset``` etc. are also included ).
+
+Both ```refname@{date}``` and ```refname@{n}``` work with git objects where the ```reflog``` is known. If you are cloning a repository, then that repository won't have a reflog, meaning that even if there are commits that should tehnically match your options, you will still get an error.
+
+### Access to previous versions
+
+With ```rev~n``` or ```rev^n``` you can get access to previous versions of objects.
+
+Let's start with the ```~``` syntax:
+
+* rev~ will give you the parent of the given version
+* rev~1 is just like rev~
+* rev~2 will give you the parent of the parent of an object
+
+Now let's go to the ```^``` syntax:
+
+* rev^ is just like rev~
+* rev^1 is just like rev^
+* rev^2 gives you the second parent element ( merge commits have for example more than one parent )
+
+You can also use ```^``` multiple times:
+
+* ```rev^``` = ```rev~```
+* ```rev^^``` = ```rev~2```
+* ```rev^^^``` = ```rev~3```
+
+You can add ```:<file>``` after all the references that have been made in order to see a specific file in different versions of the commits.
+
+## Git-Internals
+
+### Object packages
+
+In big repositories, you will get a lot of object in the ```.git/objects``` folder. This is very inefficient and will slow git down. This is why these objects are put in object packages. The object packages (```*.pack```) and their index files (```*.idx```) are all saved in ```.git/objects/pack```.
+
+Git also has a garbage collector and you can call it manually ( ```git gc``` ). You don't have to call it manually since git does it for you automatically.
+
+Whenever you are cloning a remote repository you will get a repository with all the objects packed inside ```.git/objects.pack```, you won't get the raw objects.
+
+### The ```.git/index``` file
+
+Files that are going in the staging/index area are saved in the ```.git/index``` file. This file contains the files in the staging area and their versions. The index-file is written in binary format.
+
+### Git internal commands
+
+* ```git cat-file <hashcode>``` will give you information about a certain object in the git database. You can use ```-p``` for pretty print and ```-t``` for time.
+* ```git gc``` manually execute garbage collections
+* ```git hash-object <file>``` will give you the hashcode of a file
+* ```git ls-files``` will show you the files that are under version control
+* ```git ls-tree``` will show you all the git tree objects 
+* ```git pack-objects``` will manually build a package with git objects ( ```.git/objects/pack/*``` )
+* ```git rev-list``` gives you a list just like ```git log``` that only contains the hashcodes.
+* ```git rev-parse``` takes a reference of a git object ( for example ```HEAD~``` ) and returns its hash code
+* ```git update-index``` puts files in the staging area.
