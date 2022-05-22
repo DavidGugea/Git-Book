@@ -643,3 +643,200 @@ Files that are going in the staging/index area are saved in the ```.git/index```
 * ```git rev-list``` gives you a list just like ```git log``` that only contains the hashcodes.
 * ```git rev-parse``` takes a reference of a git object ( for example ```HEAD~``` ) and returns its hash code
 * ```git update-index``` puts files in the staging area.
+
+# 4. Analysing data in a git repository
+
+## Searching commits
+
+### ```git log```
+
+```git log``` displays the previous commits, starting from the current commit. This is possible because a reference to the parent commit is stored with each commit.
+
+```git log``` shows you all the metadata of each commit ( date, author, branch, etc. ) including, and the commit message.
+
+### Clear Logging
+
+You can change the output of ```git log``` using the following options:
+
+* ```--graph```: visualize the branches
+* ```--oneline```: summarize each commit in one single line
+* ```--all```: Shows the commits from other branches as well
+* ```--decorate```: shows tags too
+* ```--name-only```: lists the changed files too
+* ```--name-status```: lists the type of change that was made for each file (```M``` for modified, ```D``` for deleted, ```A``` for added).
+* ```--pretty=online|short|medium|full|fuller|...```: predefined output-formats for all metadata and commit messages
+* ```--numstat```: lists the number of changed lines for each file
+* ```--stat```: lists the amount of changes per file as a bar chart
+
+### Custom formatting
+
+You can change the formatting of ```git log``` by adding the optional ```--pretty=format'<fmt>'```. The formatting is similar to ```printf``` formatting.
+You can also change the formatting of the date with ```--date=iso|local|short...```
+
+Example:
+
+```git log --pretty=format:'%h %<(20)%an %s'>```
+
+|Code|Meaning|
+|----|-------|
+|```%H```|Commit hash|
+|```%h```|Abbreviated commit hash (7-digits)|
+|```%ad```|Author date|
+|```%cd```|Commit date|
+|```%an```|Author Name|
+|```%ae```|Author Email|
+|```%s```|Commit Subject|
+|```%b```|Commit Body|
+|```%n```|New line|
+|```%<(20)```|Padding to the left ( with 20 in this case )|
+|```%>(20)```|Padding to the right ( with 20 in this case )|
+|```%Cred```|Color specification (i.e. red)|
+|```%Cgreen```|Color specification (i.e. green)|
+|```%C...```|Color specification|
+|```%Creset```|Color reset|
+
+### Searching Commit-Messages
+
+With the option ```--grep 'pattern'``` ```git log``` will only show commits that have commit messages that cover the given ```'pattern'```. Upper and lowercase chars matter, if you don't want them to matter add ```-i``` to the option.
+
+Example:
+
+```git log --all -i --grep CVE```
+
+### Searching for commits that change certain files
+
+Soemtimes you might only be interested in commits that change certain files. In order to do this, you can give the name of the file to ```git log```:
+
+```git log <file>```
+
+If the name of the file is the same with the name of a tag, branch, etc. use the double-dashes:
+
+```git log --<file>```
+
+If the name of the file has been changed, use ```--follow```:
+
+```git log --follow --<file>```
+
+### Commits of a certain developer
+
+With ```git log --author <name>``` or ```git log --author <email>``` you can search for commits that were written by a certain author:
+
+```git log --oneline --author 'Linus Torvalds'```
+```git log --oneline --author 'ibm.com'```
+
+### Restricting the commit range (range syntax)
+
+Normally, ```git log [<branch>]``` returns all commits of the current or specified branch back to the beginning of the commit sequence, which is usually to the first commit of the repository. This is not always useful. Often you are only interested in commits that are specific to a branch or branches, not the common base.
+
+In such cases you can use the range syntax ```<branch1>..<branch2>``` or ```<branch1>...<branch2>```. Instead of branch names you can also use hash codes or other revision specifications.
+
+```git log master..feature``` shows only the commits of the feature branch not merged with master.
+
+Example:
+
+```git
+git log --oneline master..feature
+git log --oneline feature --not master (the same)
+git log --oneline feature ^master (also the same)
+
+```
+
+```git log master...feature``` with three dots works like the above command, but additionally takes into account the commits made since the branches were separated in master.
+
+#### The range syntax with three points
+
+The variant ```git diff <rev1>...<rev2>``` is particularly useful when the revisions are for branches. In this case, ```git diff``` first finds the last common base of both branches, and then displays what has changed in ```rev2``` compared to the last common commit. Unlike ```<rev1>..<rev2>```, however, all changes that have happened in ```<rev1>``` since then are ignored.
+
+### Limiting Commits Chronologically
+
+You can limit the commits received by ```git log``` with the following options:
+
+* ```--since <date>``` or ```--after <date>```
+* ```--until <date>``` or ```--before <date>```
+
+### Sorting commits
+
+By default, ```git log``` shows commits sorted after time, newest commit first. However, this changes when you add the ```--graph``` option. ```git log``` now bundles related commits. If you want to order the commits in time despite ```--graph```, use the ```--date-order``` option.
+
+### Author date vs Commit date
+
+Normally, the two dates are the same. This changes however when rebasing. The author date is given when the original commit was made and the commit date is pointing to the date when the rebasing was made.
+
+### Marked commits (```git tag```)
+
+With ```git log <tagname>``` you can get all the commits from a given tag.
+
+Use ```git log- -simplify-by-decoration``` to get only commits that refere to a tag or a branch.
+
+Normally, ```git log``` doesn't show the tags of commits, add the ```--decorate``` option in order to see the tag of each commit.
+
+### Reference log (```git reflog```)
+
+The reflog contains all locally executed commands that have changed the global HEAD or the head of a branch. The ```git reflog``` command lists these actions along with the hash codes of the commits.
+
+If you want the detailed output of ```git log```, but at the same time want to see exactly the commits that ```git reflog``` returns, run ```git log``` with the ```--walk-reflog``` option.
+
+## Searching files
+
+### Showing old version of files (```git show```)
+
+Use ```git show <revision>:<file>``` to see the old versions of a file. This gives the file ```<file>``` in the condition of the given ```<revision>``` commit.
+
+### Differences between files (```git diff```)
+
+If you want to see differences between files use ```git diff <revision>:<file>```.
+This will show you the difference between the current version of the file and the version of the file that was in the ```<revision>``` version.
+
+You can get a compact summary using ```git diff --compact-summary```.
+
+You can also give two additional arguments to ```git diff```:
+
+* With ```-G <pattern>``` you can give a search-pattern (regular expression). ```git diff``` will return only the files, that have the given search pattern in their modifications (cassing matters).
+* ```--diff-filter=A|C|D|M|R``` filters the files that were *added*, *copied*, *deleted*, *modified* or *renamed*.
+
+Example:
+
+```git diff -G PDF --diff-filter=M --compact-summary v1.0..v2.0```
+
+### Searching files (```git grep```)
+
+Using ```git grep <pattern>``` you can search for certain files (casing matters). The command looks at all the files in the repository and only lists those that contain the given pattern.
+
+You can get a more compact result with the ```--count``` option.
+
+### Finding the authorship of code (```git blame```)
+
+Use ```git blame<file>``` to search for the author of a certainp iece of code. If you don't give it any options, it will return the given file (line by line) and right on the left side who wrote every line and when.
+
+You can add the followign options to it:
+
+* ```--color-lines```: renders continuation lines from the same commit in blue color.
+* ```--color-by-age```: indicates newly changed code in red (changes in the last month) and moderately new code in white (changes in the last year).
+
+## Searching for mistakes (```git bisect```)
+
+The idea of ```git bisect``` is that you first specify the last known good and bad commit. ```git bisect``` now performs a checkout in the middle of the commit area, thus halving the search area. (This is the case of a detached HEADS, i.e. HEAD does not refer to the end of a branch, but to some commit in the past)
+
+Example:
+
+```git
+git bisect start
+git bisect bad HEAD
+git bisect good v1.5
+```
+
+In order to stop bisecting use ```git bisect reset```.
+
+## Statistic and visualization
+
+Use ```git shortlog``` to get a short log of the repository. It normally returns a list of alphabetically ordered commits of all authors:
+
+```git
+git shortlog --summary --numbered --email --no-merge --since 2020-01-01
+```
+
+You can get the total number of commits for all branches using ```git rev-list```:
+
+```git
+git rev-list --all --count
+```
