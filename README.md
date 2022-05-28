@@ -848,3 +848,7 @@ git rev-list --all --count
 # 6. GitLab
 
 -
+
+# 7. Azure DevOps, Bitbucket, Gitea and Gitolite
+
+-
