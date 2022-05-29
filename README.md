@@ -852,3 +852,91 @@ git rev-list --all --count
 # 7. Azure DevOps, Bitbucket, Gitea and Gitolite
 
 -
+
+# 8. Workflows
+
+## Feature branches for teams
+
+The idea of this workflow is that each member builds a special so-called 'feature-branch' when implementing a feature and when the feature is done the member or members of the team make a pull-request to merge the feature branch on the master branch. The feature is reviewed by another or multiple other members of the team that have rights on the master branch and they will merge it if everything went well.
+By using feature-branches you are also drasitcally reducing the dangers of merge-conflicts.
+
+The key idea of this workflow is: ***new feature, new branch***
+
+Advantages:
+
+* undisturbed development of new features
+* code reviews are made before merging the feature branch
+* clear git history
+* robust master branch
+
+Disadvantages:
+
+* dangers of code duplication
+* complicated merges
+
+## Long-Running Branches - Gitflow
+
+When using the gitflow-workflow you must have at least 2 branches.
+You have the master branch and (at least) one other branch called ```develop``` or ```next``` where the actual development of the app is happening.
+
+The code on this branch should be robust and be available for Nightly Builds. You are only allowed to put finished Version of the app on the master branch. You don't make normal commits on the master branch.
+
+The stability of the master branch is a priority of this workflow but it enhances the complexity of all other branches.
+
+Advantages:
+
+* robust master branch
+* comprehensible versions of the app
+* multiple versions in production
+
+Disadvantages:
+
+* a lot of merges
+* high complexitz in the repositorz
+* branches tend to drift apart
+* slow rollout of new versions
+
+## Trunk-based Development
+
+When using trunk-based development the idea is to push all the changes made to the master branch as fast as possible.
+
+The ground rules of this type of development are:
+
+* no long-lasting branches outside of master
+* when using feature-branches:
+   * only one developer is allowed to work on a feature branch
+   * you only have 1-2 days time (it's better if it only takes you a couple of hours)
+
+In trunk-based development, the tasks have to be clearly defind and they have to be very small since a developer only has 1 to 2 days time to complete the tasks. Feature branches are optional in trunk based development since in the best-case scenario, all developers push directly to the master branch.
+
+### Continuos Integration
+
+A prerequisites for this type of development is a functional Continuous-Integration-Pipeline that secures the software through a large suit of tests. If there are any problems, the Pipeline Alarm will tell the developer that pushed the software what went wrong and the developer will have to fix the problems as fast as possible since nobody can push anything on the pipeline if the pipeline is broken.
+
+In the ideal case, every developer should test the code locally before commiting.
+
+### Release Ready
+
+One big advantage of this type of development is that the main branch is always *release-ready*.
+
+### Continuous Deployment
+
+Trunk-based development is the ideal type of development for Continuous Deployment
+
+### Feature-Flags
+
+In the case when developming a feature takes more than 1 to 2 days, you must use so-called *feature-flags* or *feature-toggles*.
+
+Queries are built into the code that decide whether certain functions are available or not. The conditions for this can be determined from a configuration file or from a database at runtime of the software.
+
+### Advantages and Disadvantages
+
+Advantages:
+
+* the source code is always release-ready
+* no complicated merges
+* no code-freeze of releases
+
+Disadvantages:
+
+* hard start for inexperienced developers (compensable by pair-programming)
