@@ -940,3 +940,91 @@ Advantages:
 Disadvantages:
 
 * hard start for inexperienced developers (compensable by pair-programming)
+
+# 9. Working techniques
+
+## Hooks
+
+Hooks is a script that is executed when a certain event is dispacthed in a git repository. There are multiple types of hooks:
+
+* ```pre-commit```
+* ```commit-msg```
+* ```pre-push```
+* ```post-commit```
+* ```post-checkout```
+* ```pre-receive```
+* ```update```
+* ```post-receive```
+
+## Writing good commit messages
+
+There are 3 common rules that you should follow when writing a commit message:
+
+* The first line should be small ( max 50. chars ) and should quickly describe the changes that you've madeo
+* If there is more to write, you must let the second line completly empty
+* In the third line you can continue writing more.
+
+### Writing multiple lines in the console
+
+If you write ```git commit``` without the ```-m``` you will have to write the commit message inside an editor. But even if you write ```git commit -m``` and you need multiple lines, just press enter: 
+
+```bash
+$ git commit -m 'This is
+
+a multi-line
+commit message'
+```
+
+### Commit title and text
+
+The first line is the title of the commit message and it is very important because it will be the first message seen in logs
+
+## Submodule and subtrees
+
+You can use *submodules* and *subtrees* to integreate other git projects inside your own repostiroy. There are three ways of integrating other git projects in your own repository:
+
+* **Copying**: you can just copy the source code of the repository. The downside of this technique is that you won't get all the bug fixes that will be made to the project
+* **External package managers**: you can use an external package manager like ```npm```, ```cargo```, ```gem```, ```pip```, or ```NuGet```.
+* **Submodules** and **Subtrees**: We'll talk about them in the following section
+
+### Submodule
+
+You can add a submodule using ```git submodule add```:
+
+```bash
+$ git submodule add https://github.com/test/test.git
+```
+
+You can also add the submodule in a different folder by giving the command a second parameter:
+
+```bash
+$ git submodule add https://github.com/test/test.git \ put/the/submodule/here
+```
+
+The ```.gitmodules``` file contains the relative path and URL to the repository for every single submodule
+
+Now, when we make changes in the submodule, they are immediately visible in the application. The status of the submodule seems to remain unchanged, but changes are displayed in the main project.
+
+But we can't commit in our project, we have to switch to the submodule to commit the changes there. After the commit in the submodule, there are also changes in the actual project that can be committed.
+
+Before we make changes to this submodule in another project, we should update it to the latest state before, otherwise we cannot push the changes without a merge.
+
+To load the modules in the Nachien, we need to do this:
+
+```bash
+$ git submodule update --init --recursive
+```
+
+### Subtrees
+
+While only the reference to the commit in the module is managed by the main project in the case of submodules, the entire source code of the module is included in the case of subtrees. In the standard variant, the entire Git history is also imported, which is not necessary in most cases. The Subtree command provides the ```--squash``` option for this purpose, which packs the Git history into a single commit.
+
+The git subtree command requires the ```--prefix=<prefix>``` parameter for each call, passing the path where the foreign code is located:
+
+```bash
+$ git subtree add --prefix=server/upload-exif \ https://github.com/test/test.git --squash
+```
+
+The module's files are now versioned directly from our main project. Other developers who clone our project do not even notice the subtree structure. They can work carefree with the repository without having to deal with subtrees or submodules. 
+
+The timing and hash code of the module repository when copied are documented. This makes it possible to put changes to the files back into the module repository or to populate updates from the module into the main project.
